@@ -4,6 +4,15 @@ import time
 from settings import WIDTH, HEIGHT
 from lcs import find_lcs, is_subsequence
 from ui import draw_screen
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from the .env file
+load_dotenv()
+
+# Access the environment variables
+database_url = os.getenv('DATABASE_URL')
+secret_key = os.getenv('SECRET_KEY')
 
 class LCSGame:
     def __init__(self):
