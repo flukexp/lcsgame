@@ -6,6 +6,11 @@ from lcs import find_lcs, is_subsequence
 from ui import draw_screen
 from dotenv import load_dotenv
 import os
+import nltk
+from nltk.corpus import words
+
+# Download words dataset (Run once)
+nltk.download("words")
 
 # Load environment variables from the .env file
 load_dotenv()
@@ -24,13 +29,8 @@ class LCSGame:
         self.running = True
         self.game_state = "playing"
 
-        self.word_pairs = [
-            ("HELLO", "WORLD"),
-            ("PYTHON", "PROGRAMMING"),
-            ("ALGORITHM", "ARITHMETIC"),
-            ("SEQUENCE", "SCIENCE"),
-            ("COMPUTER", "COMMUTER"),
-        ]
+        # Load a list of words from NLTK
+        self.word_list = words.words()
         
         self.current_pair = self.get_new_word_pair()
         self.user_sequence = ""
@@ -38,9 +38,22 @@ class LCSGame:
         self.start_time = time.time()
         self.time_limit = 60
 
+    def generate_random_word_pair(self, min_length=5, max_length=10):
+        """Generate a new random pair of words with a specified length range."""
+        filtered_words = [word.upper() for word in self.word_list if min_length <= len(word) <= max_length]
+        
+        if len(filtered_words) < 2:
+            raise ValueError("Not enough words available in the specified length range.")
+        
+        word1 = random.choice(filtered_words)
+        word2 = random.choice(filtered_words)
+        
+        return word1, word2
+
+    
     def get_new_word_pair(self):
         """Return a new random pair of words."""
-        return random.choice(self.word_pairs)
+        return self.generate_random_word_pair()
 
     def check_user_sequence(self):
         """Check if user input is a valid subsequence of both words."""
