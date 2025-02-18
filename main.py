@@ -1,7 +1,24 @@
-from game import LCSGame
-from db_connect import connect_to_mongo
+import asyncio
+import pygame
+from menu import init_menu
+from lcs import LCSGame
+from tutorial import Tutorial
+
+async def main():
+    while True:
+        action = init_menu()
+        await asyncio.sleep(0)
+        if action == "start":
+            game = LCSGame()
+            result = game.run()
+            if result == "exit_to_menu":
+                continue
+        elif action == "scoreboard":
+            tutorial = Tutorial()
+            tutorial.show()
+        else:
+            pygame.quit()
+            break
 
 if __name__ == "__main__":
-    game = LCSGame()
-    connect_to_mongo()
-    game.run()
+    asyncio.run(main())

@@ -1,0 +1,175 @@
+import pygame
+from settings import WIDTH, HEIGHT, WHITE, BLACK, GREEN
+
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+
+class Tutorial:
+    def __init__(self):
+        self.screen_width, self.screen_height = screen.get_size()
+        self.center_x = self.screen_width // 2
+        self.center_y = self.screen_height // 2
+        self.scroll_offset = 0
+        self.font = pygame.font.Font(None, int(self.screen_height * 0.05))
+        self.small_font = pygame.font.Font(None, int(self.screen_height * 0.03))
+        
+        # Simple examples that kids can relate to
+        self.sequences = [
+            {'seq1': 'BANANA', 'seq2': 'APPLE'},
+            {'seq1': 'KITTEN', 'seq2': 'SITTING'},
+            {'seq1': 'DRAGON', 'seq2': 'GARDEN'}
+        ]
+        self.current_example = 0
+        self.matrix = self.calculate_lcs_matrix(
+            self.sequences[self.current_example]['seq1'],
+            self.sequences[self.current_example]['seq2']
+        )
+        self.lcs_result = self.get_lcs(
+            self.sequences[self.current_example]['seq1'],
+            self.sequences[self.current_example]['seq2'],
+            self.matrix
+        )
+    
+    def calculate_lcs_matrix(self, seq1, seq2):
+        m, n = len(seq1), len(seq2)
+        dp = [[0] * (n + 1) for _ in range(m + 1)]
+        
+        for i in range(1, m + 1):
+            for j in range(1, n + 1):
+                if seq1[i-1] == seq2[j-1]:
+                    dp[i][j] = dp[i-1][j-1] + 1
+                else:
+                    dp[i][j] = max(dp[i-1][j], dp[i][j-1])
+        
+        return dp
+    
+    def get_lcs(self, seq1, seq2, matrix):
+        m, n = len(seq1), len(seq2)
+        i, j = m, n
+        lcs = []
+        
+        while i > 0 and j > 0:
+            if seq1[i-1] == seq2[j-1]:
+                lcs.append(seq1[i-1])
+                i -= 1
+                j -= 1
+            elif matrix[i-1][j] > matrix[i][j-1]:
+                i -= 1
+            else:
+                j -= 1
+        
+        return ''.join(reversed(lcs))
+    
+    def draw_explanation(self):
+        # Friendly title
+        title_text = self.font.render("Match the Letters Game!", True, GREEN)
+        title_rect = title_text.get_rect(center=(self.center_x, self.screen_height // 10))
+        screen.blit(title_text, title_rect)
+        
+        # Current example with friendly explanation
+        seq1 = self.sequences[self.current_example]['seq1']
+        seq2 = self.sequences[self.current_example]['seq2']
+        
+        example_text = self.font.render(f"Game #{self.current_example + 1}: Find matching letters in:", True, WHITE)
+        example_rect = example_text.get_rect(center=(self.center_x, self.screen_height // 5))
+        screen.blit(example_text, example_rect)
+        
+        seq1_text = self.font.render(f"Word 1: {seq1}", True, WHITE)
+        seq1_rect = seq1_text.get_rect(center=(self.center_x, self.screen_height // 4))
+        screen.blit(seq1_text, seq1_rect)
+        
+        seq2_text = self.font.render(f"Word 2: {seq2}", True, WHITE)
+        seq2_rect = seq2_text.get_rect(center=(self.center_x, self.screen_height // 3))
+        screen.blit(seq2_text, seq2_rect)
+        
+        result_text = self.font.render(f"Matching letters: {self.lcs_result}", True, GREEN)
+        result_rect = result_text.get_rect(center=(self.center_x, self.screen_height // 2.5))
+        screen.blit(result_text, result_rect)
+        
+        # Draw kid-friendly explanation
+        explanations = [
+            "This game finds the letters that appear in the same order",
+            "in both words, even if they're not next to each other!",
+            "",
+            "For example, in BANANA and APPLE:",
+            "• A appears in both",
+            "• N doesn't match anything in APPLE",
+            "• A matches again",
+            "",
+            "How it works:",
+            "1. We look at each letter in both words",
+            "2. When letters match, we add them to our result",
+            "3. If they don't match, we skip to the next letter",
+            "4. The longest match wins!"
+        ]
+        
+        y_offset = self.screen_height // 2 - self.scroll_offset
+        for i, line in enumerate(explanations):
+            text = self.small_font.render(line, True, WHITE)
+            rect = text.get_rect(center=(self.center_x, y_offset + i * int(self.screen_height * 0.04)))
+            if rect.top < self.screen_height and rect.bottom > 0:  # Only draw visible lines
+                screen.blit(text, rect)
+    
+    def draw_controls(self):
+        controls = [
+            "How to play:",
+            "UP/DOWN arrows: Scroll up and down",
+            "LEFT/RIGHT arrows: Try different word pairs",
+            "ESC: Exit the game"
+        ]
+        
+        y_offset = self.screen_height - len(controls) * int(self.screen_height * 0.04) - int(self.screen_height * 0.05)
+        for i, line in enumerate(controls):
+            text = self.small_font.render(line, True, WHITE)
+            rect = text.get_rect(topleft=(int(self.screen_width * 0.05), y_offset + i * int(self.screen_height * 0.04)))
+            screen.blit(text, rect)
+    
+    def show(self):
+        scroll_speed = int(self.screen_height * 0.1)
+        running = True
+        
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        running = False
+                    elif event.key == pygame.K_DOWN:
+                        self.scroll_offset += scroll_speed
+                    elif event.key == pygame.K_UP:
+                        self.scroll_offset -= scroll_speed
+                    elif event.key == pygame.K_RIGHT:
+                        self.current_example = (self.current_example + 1) % len(self.sequences)
+                        self.matrix = self.calculate_lcs_matrix(
+                            self.sequences[self.current_example]['seq1'],
+                            self.sequences[self.current_example]['seq2']
+                        )
+                        self.lcs_result = self.get_lcs(
+                            self.sequences[self.current_example]['seq1'],
+                            self.sequences[self.current_example]['seq2'],
+                            self.matrix
+                        )
+                    elif event.key == pygame.K_LEFT:
+                        self.current_example = (self.current_example - 1) % len(self.sequences)
+                        self.matrix = self.calculate_lcs_matrix(
+                            self.sequences[self.current_example]['seq1'],
+                            self.sequences[self.current_example]['seq2']
+                        )
+                        self.lcs_result = self.get_lcs(
+                            self.sequences[self.current_example]['seq1'],
+                            self.sequences[self.current_example]['seq2'],
+                            self.matrix
+                        )
+            
+            # Adjust scroll bounds
+            max_scroll = 20 * int(self.screen_height * 0.04)  # Approximate max scroll based on content
+            if self.scroll_offset > max_scroll:
+                self.scroll_offset = max_scroll
+            if self.scroll_offset < 0:
+                self.scroll_offset = 0
+            
+            screen.fill(BLACK)
+            self.draw_explanation()
+            self.draw_controls()
+            pygame.display.flip()
+            pygame.time.Clock().tick(30)
