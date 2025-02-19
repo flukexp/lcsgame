@@ -39,6 +39,7 @@ class LCSGame:
         return self.is_subsequence(self.user_sequence, word1) and self.is_subsequence(self.user_sequence, word2)
 
     def run(self):
+        pygame.mixer.init()
         while self.running:
             for event in pygame.event.get():
                 self.event = event
@@ -49,12 +50,20 @@ class LCSGame:
             self.draw_screen(time_remaining)
             if time_remaining <= 0:
                 self.running = False
+
         highest_score = load_highest_score()
         highest_level = load_highest_level()
-        if (self.score > highest_score):
-            save_highest_score(self.score)
-        if (self.level > highest_level):
-            save_highest_level(self.level)
+        new_high_score = self.score > highest_score
+        new_high_level = self.level > highest_level
+        
+        if new_high_score or new_high_level:
+            if new_high_level:
+                save_highest_level(self.level)
+                self.show_congratulations(f"New High Level: {self.level}!")
+            if new_high_score:
+                save_highest_score(self.score)
+                self.show_congratulations(f"New High Score: {self.score}!")
+        
         print(f"Final Score: {self.score}")
         print(f"Final Level: {self.level}")
 
@@ -93,11 +102,20 @@ class LCSGame:
                 if self.check_user_sequence():
                     correct_lcs = self.find_lcs(*self.current_pair)
                     if len(self.user_sequence) == len(correct_lcs):
+                        try:
+                            correct_sound = pygame.mixer.Sound("assets/correct.mp3")  
+                            correct_sound.play()
+                        except Exception as e:
+                            print("Error loading sound:", e)
                         self.score += len(self.user_sequence) * 10
                         self.level += 1
                         self.current_pair = self.get_new_word_pair()
                         self.user_sequence = ""
                         self.game_state = "playing"
+                    else:
+                        self.wrong_answer_effect()
+                else:
+                    self.wrong_answer_effect()
             elif event.key == pygame.K_BACKSPACE:
                 self.user_sequence = self.user_sequence[:-1]
             elif event.key == pygame.K_SPACE:
@@ -105,6 +123,56 @@ class LCSGame:
                 self.game_state = "showing_solution"
             elif event.unicode.isalpha():
                 self.user_sequence += event.unicode.upper()
+                
+    def show_congratulations(self, message):
+        """Displays a congratulatory message on the screen."""
+        self.screen.fill(BLACK)
+        congrats_text = FONT.render(message, True, GREEN)
+        text_rect = congrats_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+        self.screen.blit(congrats_text, text_rect)
+        pygame.display.flip()
+        
+        try:
+            win_sound = pygame.mixer.Sound("assets/win.wav")  
+            win_sound.play()
+        except Exception as e:
+            print("Error loading sound:", e)
+        
+        pygame.time.delay(2000)  # Show message for 2 seconds
+
+    def wrong_answer_effect(self):
+        original_x, original_y = 50, 50  # Original position of the word
+        shake_amount = 5  # Number of pixels the word will "shake"
+        shake_count = 10  # Number of shakes
+        shake_delay = 30  # Delay between shakes in milliseconds
+        
+        try:
+            error_sound = pygame.mixer.Sound("assets/wrong.mp3")  # Ensure the file exists
+            error_sound.play()
+        except Exception as e:
+            print("Error loading sound:", e)
+        
+        # Shake effect
+        
+        for _ in range(shake_count):
+            offset_x = random.randint(-shake_amount, shake_amount)
+            offset_y = random.randint(-shake_amount, shake_amount)
+            self.screen.fill(BLACK)  # Fill screen with black for clean slate
+            word1, word2 = self.current_pair  # Get current words to display
+            self.screen.blit(FONT.render(f"Word 1: {word1}", True, WHITE), (original_x + offset_x, original_y + offset_y))
+            self.screen.blit(FONT.render(f"Word 2: {word2}", True, WHITE), (original_x + offset_x, original_y + 50 + offset_y))
+            if (self.user_sequence != ""):
+                self.screen.blit(FONT.render(f"Your sequence: {self.user_sequence}", True, RED), (original_x + offset_x, original_y + 150 + offset_y))
+            pygame.display.flip()
+            pygame.time.delay(shake_delay)
+        
+        # Clear screen or make the word disappear after shake
+        self.screen.fill(BLACK)  # Clear screen
+        pygame.display.flip()
+
+        # Reset user sequence after shake effect
+        self.user_sequence = ""  # Reset user input
+        self.game_state = "playing"  # Return to playing state
 
     def find_lcs(self, str1, str2):
         m, n = len(str1), len(str2)

@@ -6,31 +6,40 @@ from settings import WIDTH, HEIGHT, FONT, WHITE, BLACK, GREEN, RED
 # Load highest score from JSON
 SCORE_FILE = "assets/score.json"
 
-def load_highest_score():
+def load_existing_data():
+    """Load the existing score data, handling missing or corrupted files."""
     if os.path.exists(SCORE_FILE):
         with open(SCORE_FILE, "r") as file:
             try:
-                return json.load(file).get("highest_score", 0)
+                return json.load(file)
             except json.JSONDecodeError:
-                return 0
-    return 0
+                return {}  # Return an empty dictionary if file is corrupted
+    return {}
+
+def load_highest_score():
+    """Load the highest score, returning 0 if not found."""
+    return load_existing_data().get("highest_score", 0)
 
 def load_highest_level():
-    if os.path.exists(SCORE_FILE):
-        with open(SCORE_FILE, "r") as file:
-            try:
-                return json.load(file).get("highest_level", 0)
-            except json.JSONDecodeError:
-                return 0
-    return 0
+    """Load the highest level, returning 0 if not found."""
+    return load_existing_data().get("highest_level", 0)
 
 def save_highest_score(score):
-    with open(SCORE_FILE, "w") as file:
-        json.dump({"highest_score": score}, file)
-        
+    """Update the highest score while preserving other fields."""
+    data = load_existing_data()
+    data["highest_score"] = score
+    save_data(data)
+
 def save_highest_level(level):
+    """Update the highest level while preserving other fields."""
+    data = load_existing_data()
+    data["highest_level"] = level
+    save_data(data)
+
+def save_data(data):
+    """Save the updated score data to the file."""
     with open(SCORE_FILE, "w") as file:
-        json.dump({"highest_level": level}, file)
+        json.dump(data, file)
 
 # Initialize pygame
 pygame.init()
