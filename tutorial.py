@@ -1,5 +1,6 @@
 import pygame
-from settings import WIDTH, HEIGHT, WHITE, BLACK, GREEN
+import math
+from settings import WIDTH, HEIGHT, WHITE, BLACK, GREEN, DARK_GREEN, GRAY
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
@@ -9,6 +10,9 @@ class Tutorial:
         self.center_x = self.screen_width // 2
         self.center_y = self.screen_height // 2
         self.scroll_offset = 0
+        
+        # Improved fonts with better sizing
+        self.title_font = pygame.font.Font(None, int(self.screen_height * 0.08))
         self.font = pygame.font.Font(None, int(self.screen_height * 0.05))
         self.small_font = pygame.font.Font(None, int(self.screen_height * 0.03))
         
@@ -28,7 +32,15 @@ class Tutorial:
             self.sequences[self.current_example]['seq2'],
             self.matrix
         )
-    
+        
+        # Animation variables
+        self.animation_counter = 0
+        self.animation_speed = 2
+        
+    def draw_rounded_rect(self, surface, rect, color, radius=20):
+        """Draw a rounded rectangle"""
+        pygame.draw.rect(surface, color, rect, border_radius=radius)
+        
     def calculate_lcs_matrix(self, seq1, seq2):
         m, n = len(seq1), len(seq2)
         dp = [[0] * (n + 1) for _ in range(m + 1)]
@@ -60,32 +72,68 @@ class Tutorial:
         return ''.join(reversed(lcs))
     
     def draw_explanation(self):
-        # Friendly title
-        title_text = self.font.render("Match the Letters Game!", True, GREEN)
+        # Animated title with pulsing effect
+        pulse = abs(math.sin(self.animation_counter / 30)) * 10
+        title_size = int(self.screen_height * 0.08 + pulse)
+        title_font = pygame.font.Font(None, title_size)
+        title_text = title_font.render("Tutorial LCS Game!", True, GREEN)
         title_rect = title_text.get_rect(center=(self.center_x, self.screen_height // 10))
         screen.blit(title_text, title_rect)
+        
+        # Example card background
+        card_rect = pygame.Rect(
+            self.center_x - 300,
+            self.screen_height // 4 - 50,
+            600,
+            300
+        )
+        self.draw_rounded_rect(screen, card_rect, GRAY)
         
         # Current example with friendly explanation
         seq1 = self.sequences[self.current_example]['seq1']
         seq2 = self.sequences[self.current_example]['seq2']
         
-        example_text = self.font.render(f"Game #{self.current_example + 1}: Find matching letters in:", True, WHITE)
-        example_rect = example_text.get_rect(center=(self.center_x, self.screen_height // 5))
+        # Game number with background
+        number_rect = pygame.Rect(
+            card_rect.left + 20,
+            card_rect.top + 20,
+            200,
+            40
+        )
+        self.draw_rounded_rect(screen, number_rect, DARK_GREEN)
+        example_text = self.font.render(f"Game #{self.current_example + 1}", True, WHITE)
+        example_rect = example_text.get_rect(center=number_rect.center)
         screen.blit(example_text, example_rect)
         
-        seq1_text = self.font.render(f"Word 1: {seq1}", True, WHITE)
-        seq1_rect = seq1_text.get_rect(center=(self.center_x, self.screen_height // 4))
-        screen.blit(seq1_text, seq1_rect)
+        # Words with highlighting
+        y_offset = card_rect.top + 100
+        for idx, (label, word) in enumerate([("Word 1:", seq1), ("Word 2:", seq2)]):
+            label_text = self.font.render(label, True, WHITE)
+            word_text = self.font.render(word, True, GREEN)
+            screen.blit(label_text, (card_rect.left + 50, y_offset + idx * 60))
+            screen.blit(word_text, (card_rect.left + 250, y_offset + idx * 60))
         
-        seq2_text = self.font.render(f"Word 2: {seq2}", True, WHITE)
-        seq2_rect = seq2_text.get_rect(center=(self.center_x, self.screen_height // 3))
-        screen.blit(seq2_text, seq2_rect)
-        
-        result_text = self.font.render(f"Matching letters: {self.lcs_result}", True, GREEN)
-        result_rect = result_text.get_rect(center=(self.center_x, self.screen_height // 2.5))
+        # Result in highlighted box
+        result_rect = pygame.Rect(
+            card_rect.left + 50,
+            y_offset + 120,
+            500,
+            60
+        )
+        self.draw_rounded_rect(screen, result_rect, DARK_GREEN)
+        result_text = self.font.render(f"Matching letters: {self.lcs_result}", True, WHITE)
+        result_rect = result_text.get_rect(center=(result_rect.centerx, result_rect.centery))
         screen.blit(result_text, result_rect)
         
-        # Draw kid-friendly explanation
+        # Draw kid-friendly explanation in a scrollable card
+        explanation_card = pygame.Rect(
+            self.center_x - 300,
+            self.screen_height // 2 + 100,
+            600,
+            200
+        )
+        self.draw_rounded_rect(screen, explanation_card, GRAY)
+        
         explanations = [
             "This game finds the letters that appear in the same order",
             "in both words, even if they're not next to each other!",
@@ -102,32 +150,50 @@ class Tutorial:
             "4. The longest match wins!"
         ]
         
-        y_offset = self.screen_height // 2 - self.scroll_offset
+        # Create a clipping rectangle for scrolling
+        pygame.draw.rect(screen, BLACK, (
+            explanation_card.left,
+            explanation_card.top - 2,
+            explanation_card.width,
+            2
+        ))
+        pygame.draw.rect(screen, BLACK, (
+            explanation_card.left,
+            explanation_card.bottom,
+            explanation_card.width,
+            2
+        ))
+        
+        y_offset = explanation_card.top + 20 - self.scroll_offset
         for i, line in enumerate(explanations):
             text = self.small_font.render(line, True, WHITE)
-            rect = text.get_rect(center=(self.center_x, y_offset + i * int(self.screen_height * 0.04)))
-            if rect.top < self.screen_height and rect.bottom > 0:  # Only draw visible lines
+            rect = text.get_rect(left=explanation_card.left + 30, top=y_offset + i * 25)
+            if explanation_card.top <= rect.top <= explanation_card.bottom - 30:
                 screen.blit(text, rect)
     
     def draw_controls(self):
+        # Draw controls in a bottom bar
+        control_rect = pygame.Rect(0, self.screen_height - 60, self.screen_width, 60)
+        self.draw_rounded_rect(screen, control_rect, DARK_GREEN)
+        
         controls = [
-            "How to play:",
-            "UP/DOWN arrows: Scroll up and down",
-            "LEFT/RIGHT arrows: Try different word pairs",
-            "ESC: Exit the game"
+            "UP/DOWN arrows: Scroll",
+            "LEFT/RIGHT arrows: Change Words",
+            "ESC: Exit"
         ]
         
-        y_offset = self.screen_height - len(controls) * int(self.screen_height * 0.04) - int(self.screen_height * 0.05)
-        for i, line in enumerate(controls):
-            text = self.small_font.render(line, True, WHITE)
-            rect = text.get_rect(topleft=(int(self.screen_width * 0.05), y_offset + i * int(self.screen_height * 0.04)))
-            screen.blit(text, rect)
+        for i, control in enumerate(controls):
+            text = self.small_font.render(control, True, WHITE)
+            x_pos = self.screen_width // 4 * (i + 1) - text.get_width() // 2
+            screen.blit(text, (x_pos, self.screen_height - 37))
     
     def show(self):
-        scroll_speed = int(self.screen_height * 0.1)
+        clock = pygame.time.Clock()
         running = True
         
         while running:
+            self.animation_counter += self.animation_speed
+            
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
@@ -135,9 +201,9 @@ class Tutorial:
                     if event.key == pygame.K_ESCAPE:
                         running = False
                     elif event.key == pygame.K_DOWN:
-                        self.scroll_offset += scroll_speed
+                        self.scroll_offset += 20
                     elif event.key == pygame.K_UP:
-                        self.scroll_offset -= scroll_speed
+                        self.scroll_offset -= 20
                     elif event.key == pygame.K_RIGHT:
                         self.current_example = (self.current_example + 1) % len(self.sequences)
                         self.matrix = self.calculate_lcs_matrix(
@@ -162,14 +228,11 @@ class Tutorial:
                         )
             
             # Adjust scroll bounds
-            max_scroll = 20 * int(self.screen_height * 0.04)  # Approximate max scroll based on content
-            if self.scroll_offset > max_scroll:
-                self.scroll_offset = max_scroll
-            if self.scroll_offset < 0:
-                self.scroll_offset = 0
+            max_scroll = 13 * 25 - 150  # Approximate max scroll
+            self.scroll_offset = max(0, min(self.scroll_offset, max_scroll))
             
             screen.fill(BLACK)
             self.draw_explanation()
             self.draw_controls()
             pygame.display.flip()
-            pygame.time.Clock().tick(30)
+            clock.tick(60)
