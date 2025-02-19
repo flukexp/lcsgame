@@ -5,6 +5,7 @@ from lcs import LCSGame
 from tutorial import Tutorial
 
 async def main():
+    """Main function to run the game."""
     while True:
         action = init_menu()
         await asyncio.sleep(0)

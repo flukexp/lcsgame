@@ -162,6 +162,8 @@ class LCSGame:
         pygame.display.flip()
 
         pygame.time.delay(2000)  # Show for 3 seconds
+        self.current_pair = self.get_new_word_pair()
+        self.user_sequence = ""
         self.game_state = "playing"  # Return to normal gameplay
 
                 

@@ -1,4 +1,2 @@
 pygame
-python-dotenv
 nltk
-pymongo
