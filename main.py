@@ -13,7 +13,7 @@ async def main():
             result = game.run()
             if result == "exit_to_menu":
                 continue
-        elif action == "scoreboard":
+        elif action == "tutorial":
             tutorial = Tutorial()
             tutorial.show()
         else:

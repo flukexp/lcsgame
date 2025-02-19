@@ -4,6 +4,7 @@ import time
 import nltk
 from collections import defaultdict
 from settings import WIDTH, HEIGHT, FONT, WHITE, BLACK, GREEN, RED, BLUE
+from menu import save_highest_score, load_highest_score, save_highest_level, load_highest_level
 
 nltk.download("words")
 
@@ -48,7 +49,12 @@ class LCSGame:
             self.draw_screen(time_remaining)
             if time_remaining <= 0:
                 self.running = False
-        pygame.quit()
+        highest_score = load_highest_score()
+        highest_level = load_highest_level()
+        if (self.score > highest_score):
+            save_highest_score(self.score)
+        if (self.level > highest_level):
+            save_highest_level(self.level)
         print(f"Final Score: {self.score}")
         print(f"Final Level: {self.level}")
 
