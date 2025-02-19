@@ -87,7 +87,7 @@ class LCSGame:
                 if self.check_user_sequence():
                     correct_lcs = self.find_lcs(*self.current_pair)
                     if len(self.user_sequence) == len(correct_lcs):
-                        self.score += len(self.game.user_sequence) * 10
+                        self.score += len(self.user_sequence) * 10
                         self.level += 1
                         self.current_pair = self.get_new_word_pair()
                         self.user_sequence = ""
