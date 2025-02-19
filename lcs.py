@@ -2,14 +2,26 @@ import pygame
 import random
 import time
 import nltk
+import math
 from collections import defaultdict
-from settings import WIDTH, HEIGHT, FONT, WHITE, BLACK, GREEN, RED, BLUE
+from settings import WIDTH, HEIGHT, FONT, WHITE, BLACK, GREEN, RED, BLUE, DARK_GREEN, GRAY, LIGHT_GRAY
 from menu import save_highest_score, load_highest_score, save_highest_level, load_highest_level
 
 nltk.download("words")
 
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+
 class LCSGame:
     def __init__(self):
+        self.screen_width, self.screen_height = screen.get_size()
+        self.center_x = self.screen_width // 2
+        self.center_y = self.screen_height // 2
+
+        # Improved fonts with better sizing
+        self.title_font = pygame.font.Font(None, int(self.screen_height * 0.08))
+        self.font = pygame.font.Font(None, int(self.screen_height * 0.05))
+        self.small_font = pygame.font.Font(None, int(self.screen_height * 0.03))
+        
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption("LCS Algorithm Game")
         self.score = 0
@@ -22,6 +34,14 @@ class LCSGame:
         self.correct_sequence = None
         self.start_time = time.time()
         self.time_limit = 60
+
+        # Animation variables
+        self.animation_counter = 0
+        self.animation_speed = 2
+
+    def draw_rounded_rect(self, surface, rect, color, radius=20):
+        """Draw a rounded rectangle"""
+        pygame.draw.rect(surface, color, rect, border_radius=radius)
 
     def generate_random_word_pair(self, min_length=5, max_length=10):
         filtered_words = [word.upper() for word in self.word_list if min_length <= len(word) <= max_length]
@@ -40,6 +60,7 @@ class LCSGame:
 
     def run(self):
         pygame.mixer.init()
+        clock = pygame.time.Clock()
         while self.running:
             for event in pygame.event.get():
                 self.event = event
@@ -50,6 +71,11 @@ class LCSGame:
             self.draw_screen(time_remaining)
             if time_remaining <= 0:
                 self.running = False
+            
+            self.animation_counter += self.animation_speed
+            pygame.display.flip()
+            clock.tick(60)
+
 
         highest_score = load_highest_score()
         highest_level = load_highest_level()
@@ -68,25 +94,55 @@ class LCSGame:
         print(f"Final Level: {self.level}")
 
     def draw_screen(self, time_remaining):
+
         self.screen.fill(BLACK)
+
+        pulse = abs(math.sin(self.animation_counter / 30)) * 10
+        title_size = int(self.screen_height * 0.08 + pulse)
+        title_font = pygame.font.Font(None, title_size)
+        title_text = title_font.render("LCS Game!", True, GREEN)
+        title_rect = title_text.get_rect(center=(self.center_x, self.screen_height // 10))
+        screen.blit(title_text, title_rect)
+
+        add_y = 100
+        control_rect = pygame.Rect(30, 30+ add_y, 964, 420)
+        self.draw_rounded_rect(screen, control_rect, GRAY)
+
+        control_rect = pygame.Rect(40, 40+add_y, 944, 95)
+        self.draw_rounded_rect(screen, control_rect, DARK_GREEN)
+
+        control_rect = pygame.Rect(40, 170+add_y, 944, 90)
+        self.draw_rounded_rect(screen, control_rect, WHITE)
+
         word1, word2 = self.current_pair
-        self.screen.blit(FONT.render(f"Word 1: {word1}", True, WHITE), (50, 50))
-        self.screen.blit(FONT.render(f"Word 2: {word2}", True, WHITE), (50, 100))
+        self.screen.blit(FONT.render(f"Word 1: {word1}", True, WHITE), (50, 50+add_y))
+        self.screen.blit(FONT.render(f"Word 2: {word2}", True, WHITE), (50, 100+add_y))
         sequence_color = GREEN if self.game_state == "playing" else RED
-        self.screen.blit(FONT.render(f"Your sequence: {self.user_sequence}", True, sequence_color), (50, 200))
-        self.screen.blit(FONT.render(f"Score: {self.score}", True, WHITE), (50, 300))
-        self.screen.blit(FONT.render(f"Level: {self.level}", True, WHITE), (50, 350))
-        self.screen.blit(FONT.render(f"Time: {int(time_remaining)}s", True, WHITE), (50, 400))
-        instructions = [
-            "Instructions:",
-            "- Type letters to build a common subsequence",
-            "- Press ENTER to submit",
-            "- Press BACKSPACE to delete",
-            "- Press SPACE to see solution",
-            "- Press ESC to quit",
-        ]
-        for i, instruction in enumerate(instructions):
-            self.screen.blit(FONT.render(instruction, True, WHITE), (50, 500 + i * 40))
+        self.screen.blit(FONT.render(f"Your sequence: {self.user_sequence}", True, sequence_color), (50, 200+add_y))
+        self.screen.blit(FONT.render(f"Score: {self.score}", True, WHITE), (50, 300+add_y))
+        self.screen.blit(FONT.render(f"Level: {self.level}", True, WHITE), (50, 350+add_y))
+        self.screen.blit(FONT.render(f"Time: {int(time_remaining)}s", True, WHITE), (50, 400+add_y))
+        # instructions = [
+        #     "Instructions:",
+        #     "- Type letters to build a common subsequence",
+        #     "- Press ENTER to submit",
+        #     "- Press BACKSPACE to delete",
+        #     "- Press SPACE to see solution",
+        #     "- Press ESC to quit",
+        # ]
+
+        # control_rect = pygame.Rect(30, 480, 964, 260)
+        # self.draw_rounded_rect(screen, control_rect, GRAY)
+
+        # control_rect = pygame.Rect(40, 490, 180, 45)
+        # self.draw_rounded_rect(screen, control_rect, DARK_GREEN)
+
+        # for i, instruction in enumerate(instructions):
+        #     self.screen.blit(FONT.render(instruction, True, WHITE), (50, 500 + i * 40))
+
+        
+        self.draw_controls()
+
         pygame.display.flip()
         
     def handle_input(self, event):
@@ -146,19 +202,70 @@ class LCSGame:
         word2_surface = render_word_with_highlight(word2, lcs)
 
         self.screen.fill(BLACK)
-        self.screen.blit(word1_surface, (50, 50))
-        self.screen.blit(word2_surface, (50, 100))
-        self.screen.blit(FONT.render(f"Solution: {lcs}", True, BLUE), (50, 250))
-        instructions = [
-            "Instructions:",
-            "- Type letters to build a common subsequence",
-            "- Press ENTER to submit",
-            "- Press BACKSPACE to delete",
-            "- Press SPACE to see solution",
-            "- Press ESC to quit",
-        ]
-        for i, instruction in enumerate(instructions):
-            self.screen.blit(FONT.render(instruction, True, WHITE), (50, 500 + i * 40))
+
+        card_rect = pygame.Rect(
+            self.center_x - 300,
+            self.screen_height // 4 - 50,
+            600,
+            300
+        )
+        self.draw_rounded_rect(screen, card_rect, GRAY)
+
+        number_rect = pygame.Rect(
+            card_rect.left + 20,
+            card_rect.top + 20,
+            200,
+            40
+        )
+        self.draw_rounded_rect(screen, number_rect, DARK_GREEN)
+
+        example_text = self.font.render(f"Solution", True, WHITE)
+        example_rect = example_text.get_rect(center=number_rect.center)
+        screen.blit(example_text, example_rect)
+
+        self.screen.blit(FONT.render('Word 1:', True, WHITE), (270, 240))
+
+        self.screen.blit(FONT.render('Word 2:', True, WHITE), (270, 300))
+
+        self.screen.blit(word1_surface, (370, 190))
+        self.screen.blit(word2_surface, (370, 250))
+
+        # self.screen.blit(FONT.render(f"Solution: {lcs}", True, BLUE), (50, 250))
+
+        y_offset = card_rect.top + 100
+
+        result_rect = pygame.Rect(
+            card_rect.left + 50,
+            y_offset + 120,
+            500,
+            60
+        )
+
+        self.draw_rounded_rect(screen, result_rect, DARK_GREEN)
+        result_text = self.font.render(f"Solution: {lcs}", True, WHITE)
+        result_rect = result_text.get_rect(center=(result_rect.centerx, result_rect.centery))
+        screen.blit(result_text, result_rect)
+
+        # instructions = [
+        #     "Instructions:",
+        #     "- Type letters to build a common subsequence",
+        #     "- Press ENTER to submit",
+        #     "- Press BACKSPACE to delete",
+        #     "- Press SPACE to see solution",
+        #     "- Press ESC to quit",
+        # ]
+
+        # control_rect = pygame.Rect(30, 480, 964, 260)
+        # self.draw_rounded_rect(screen, control_rect, GRAY)
+
+        # control_rect = pygame.Rect(40, 490, 180, 45)
+        # self.draw_rounded_rect(screen, control_rect, DARK_GREEN)
+
+        # for i, instruction in enumerate(instructions):
+        #     self.screen.blit(FONT.render(instruction, True, WHITE), (50, 500 + i * 40))
+
+        self.draw_controls()
+        
         pygame.display.flip()
 
         pygame.time.delay(2000)  # Show for 3 seconds
@@ -239,3 +346,20 @@ class LCSGame:
             if s_idx < len(s) and char == s[s_idx]:
                 s_idx += 1
         return s_idx == len(s)
+    
+    def draw_controls(self):
+        # Draw controls in a bottom bar
+        control_rect = pygame.Rect(0, self.screen_height - 60, self.screen_width, 60)
+        self.draw_rounded_rect(screen, control_rect, DARK_GREEN)
+        
+        controls = [
+            "ENTER: submit",
+            "BACKSPACE: delete",
+            "SPACE: see solution",
+            "ESC: Exit"
+        ]
+        
+        for i, control in enumerate(controls):
+            text = self.small_font.render(control, True, WHITE)
+            x_pos = self.screen_width // 5 * (i + 1) - text.get_width() // 2
+            screen.blit(text, (x_pos, self.screen_height - 37))
