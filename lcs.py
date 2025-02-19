@@ -87,8 +87,6 @@ class LCSGame:
         ]
         for i, instruction in enumerate(instructions):
             self.screen.blit(FONT.render(instruction, True, WHITE), (50, 500 + i * 40))
-        if self.game_state == "showing_solution":
-            self.screen.blit(FONT.render(f"Solution: {self.correct_sequence}", True, BLUE), (50, 250))
         pygame.display.flip()
         
     def handle_input(self, event):
@@ -121,8 +119,51 @@ class LCSGame:
             elif event.key == pygame.K_SPACE:
                 self.correct_sequence = self.find_lcs(*self.current_pair)
                 self.game_state = "showing_solution"
+                self.highlight_correct_sequence()
             elif event.unicode.isalpha():
                 self.user_sequence += event.unicode.upper()
+    
+    def highlight_correct_sequence(self):
+        """Highlight correct LCS sequence for 3 seconds."""
+        word1, word2 = self.current_pair
+        lcs = self.correct_sequence
+
+        def render_word_with_highlight(word, lcs):
+            """Returns a rendered word where LCS characters are highlighted in GREEN."""
+            text_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+            x, y = 50, 50  # Position of words
+            offset_x = 0
+
+            for char in word:
+                color = GREEN if char in lcs else WHITE
+                char_surface = FONT.render(char, True, color)
+                text_surface.blit(char_surface, (x + offset_x, y))
+                offset_x += char_surface.get_width() + 5  # Space between characters
+            return text_surface
+
+        # Highlight LCS in both words
+        word1_surface = render_word_with_highlight(word1, lcs)
+        word2_surface = render_word_with_highlight(word2, lcs)
+
+        self.screen.fill(BLACK)
+        self.screen.blit(word1_surface, (50, 50))
+        self.screen.blit(word2_surface, (50, 100))
+        self.screen.blit(FONT.render(f"Solution: {lcs}", True, BLUE), (50, 250))
+        instructions = [
+            "Instructions:",
+            "- Type letters to build a common subsequence",
+            "- Press ENTER to submit",
+            "- Press BACKSPACE to delete",
+            "- Press SPACE to see solution",
+            "- Press ESC to quit",
+        ]
+        for i, instruction in enumerate(instructions):
+            self.screen.blit(FONT.render(instruction, True, WHITE), (50, 500 + i * 40))
+        pygame.display.flip()
+
+        pygame.time.delay(2000)  # Show for 3 seconds
+        self.game_state = "playing"  # Return to normal gameplay
+
                 
     def show_congratulations(self, message):
         """Displays a congratulatory message on the screen."""
