@@ -11,6 +11,10 @@ nltk.download("words")
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
+# remove background
+BG_IMAGE_PATH = "assets/sun.png"
+
+
 class LCSGame:
     def __init__(self):
         self.screen_width, self.screen_height = screen.get_size()
@@ -22,6 +26,10 @@ class LCSGame:
         self.font = pygame.font.Font(None, int(self.screen_height * 0.05))
         self.small_font = pygame.font.Font(None, int(self.screen_height * 0.03))
         
+        # load BG
+        self.bg_image = pygame.image.load(BG_IMAGE_PATH)
+        self.bg_image = pygame.transform.scale(self.bg_image, (WIDTH, HEIGHT))
+
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption("LCS Algorithm Game")
         self.score = 0
@@ -95,12 +103,14 @@ class LCSGame:
 
     def draw_screen(self, time_remaining):
 
-        self.screen.fill(BLACK)
+        # self.screen.fill(BLACK)
+        # เพิ่ม background
+        self.screen.blit(self.bg_image, (0, 0))
 
         pulse = abs(math.sin(self.animation_counter / 30)) * 10
         title_size = int(self.screen_height * 0.08 + pulse)
-        title_font = pygame.font.Font(None, title_size)
-        title_text = title_font.render("LCS Game!", True, GREEN)
+        title_font = pygame.font.Font("assets/fontvit.otf", title_size)
+        title_text = title_font.render("LCS Game!", True, BLACK)
         title_rect = title_text.get_rect(center=(self.center_x, self.screen_height // 10))
         screen.blit(title_text, title_rect)
 
@@ -118,7 +128,8 @@ class LCSGame:
         self.screen.blit(FONT.render(f"Word 1: {word1}", True, WHITE), (50, 50+add_y))
         self.screen.blit(FONT.render(f"Word 2: {word2}", True, WHITE), (50, 100+add_y))
         sequence_color = GREEN if self.game_state == "playing" else RED
-        self.screen.blit(FONT.render(f"Your sequence: {self.user_sequence}", True, sequence_color), (50, 200+add_y))
+        self.screen.blit(FONT.render(f"Your sequence:", True, sequence_color), (50, 200+add_y))
+        self.screen.blit(FONT.render(f"{self.user_sequence}", True, BLACK), (280, 200+add_y))
         self.screen.blit(FONT.render(f"Score: {self.score}", True, WHITE), (50, 300+add_y))
         self.screen.blit(FONT.render(f"Level: {self.level}", True, WHITE), (50, 350+add_y))
         self.screen.blit(FONT.render(f"Time: {int(time_remaining)}s", True, WHITE), (50, 400+add_y))
@@ -201,7 +212,8 @@ class LCSGame:
         word1_surface = render_word_with_highlight(word1, lcs)
         word2_surface = render_word_with_highlight(word2, lcs)
 
-        self.screen.fill(BLACK)
+        # self.screen.fill(BLACK)
+        self.screen.blit(self.bg_image, (0, 0))
 
         card_rect = pygame.Rect(
             self.center_x - 300,
@@ -294,7 +306,7 @@ class LCSGame:
         original_x, original_y = 50, 50  # Original position of the word
         shake_amount = 5  # Number of pixels the word will "shake"
         shake_count = 10  # Number of shakes
-        shake_delay = 30  # Delay between shakes in milliseconds
+        shake_delay = 70  # Delay between shakes in milliseconds
         
         try:
             error_sound = pygame.mixer.Sound("assets/wrong.mp3")  # Ensure the file exists

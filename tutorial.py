@@ -3,6 +3,7 @@ import math
 from settings import WIDTH, HEIGHT, WHITE, BLACK, GREEN, DARK_GREEN, GRAY
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
+BG_IMAGE_PATH = "assets/sun.png"
 
 class Tutorial:
     def __init__(self):
@@ -13,7 +14,7 @@ class Tutorial:
         
         # Improved fonts with better sizing
         self.title_font = pygame.font.Font(None, int(self.screen_height * 0.08))
-        self.font = pygame.font.Font(None, int(self.screen_height * 0.05))
+        self.font = pygame.font.Font("assets/fontvit.otf", int(self.screen_height * 0.05))
         self.small_font = pygame.font.Font(None, int(self.screen_height * 0.03))
         
         # Simple examples that kids can relate to
@@ -36,6 +37,11 @@ class Tutorial:
         # Animation variables
         self.animation_counter = 0
         self.animation_speed = 2
+
+        # load BG
+        self.bg_image = pygame.image.load(BG_IMAGE_PATH)
+        self.bg_image = pygame.transform.scale(self.bg_image, (WIDTH, HEIGHT))
+        
         
     def draw_rounded_rect(self, surface, rect, color, radius=20):
         """Draw a rounded rectangle"""
@@ -75,8 +81,8 @@ class Tutorial:
         # Animated title with pulsing effect
         pulse = abs(math.sin(self.animation_counter / 30)) * 10
         title_size = int(self.screen_height * 0.08 + pulse)
-        title_font = pygame.font.Font(None, title_size)
-        title_text = title_font.render("Tutorial LCS Game!", True, GREEN)
+        title_font = pygame.font.Font("assets/fontvit.otf", title_size)
+        title_text = title_font.render("Tutorial LCS Game!", True, BLACK)
         title_rect = title_text.get_rect(center=(self.center_x, self.screen_height // 10))
         screen.blit(title_text, title_rect)
         
@@ -231,7 +237,8 @@ class Tutorial:
             max_scroll = 13 * 25 - 150  # Approximate max scroll
             self.scroll_offset = max(0, min(self.scroll_offset, max_scroll))
             
-            screen.fill(BLACK)
+            # screen.fill(BLACK)
+            screen.blit(self.bg_image, (0, 0))
             self.draw_explanation()
             self.draw_controls()
             pygame.display.flip()

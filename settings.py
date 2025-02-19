@@ -19,4 +19,6 @@ GRAY = (128, 128, 128)
 pygame.init()
 
 # Fonts
-FONT = pygame.font.Font(None, 36)
+# FONT = pygame.font.Font(None, 36)
+
+FONT = pygame.font.Font("assets/fontvit.otf", 28)  # lcs

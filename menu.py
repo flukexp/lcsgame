@@ -5,6 +5,8 @@ from settings import WIDTH, HEIGHT, FONT, WHITE, BLACK, GREEN
 
 # Load highest score from JSON
 SCORE_FILE = "assets/score.json"
+# remove background
+BG_IMAGE_PATH = "assets/sun.png"
 
 def load_existing_data():
     """Load the existing score data, handling missing or corrupted files."""
@@ -58,25 +60,30 @@ class Menu:
         self.highest_level = load_highest_level()
         self.update_dimensions()
 
+        # load BG
+        self.bg_image = pygame.image.load(BG_IMAGE_PATH)
+        self.bg_image = pygame.transform.scale(self.bg_image, (WIDTH, HEIGHT))
+
     def update_dimensions(self):
         """Update menu dimensions based on the current screen size."""
         self.screen_width, self.screen_height = screen.get_size()
-        self.font = pygame.font.Font(None, int(self.screen_height * 0.05))
+        self.font = pygame.font.Font("assets/fontvit.otf", int(self.screen_height * 0.05))
         self.center_x = self.screen_width // 2
         self.center_y = self.screen_height // 2.5
 
     def draw(self):
         """Draw the menu on the screen."""
-        screen.fill(BLACK)
+        # screen.fill(BLACK)
+        screen.blit(self.bg_image, (0, 0))
         for idx, item in enumerate(self.menu_items):
             color = GREEN if idx == self.selected_item else WHITE
             text = self.font.render(item, True, color)
             text_rect = text.get_rect(center=(self.center_x, self.center_y + idx * int(self.screen_height * 0.1)))
             screen.blit(text, text_rect)
-        score_text = self.font.render(f"Highest Score: {self.highest_score}", True, WHITE)
+        score_text = self.font.render(f"Highest Score: {self.highest_score}", True, BLACK)
         score_rect = score_text.get_rect(topright=(WIDTH - 50, 30))
         screen.blit(score_text, score_rect)
-        level_text = self.font.render(f"Highest Level: {self.highest_level}", True, WHITE)
+        level_text = self.font.render(f"Highest Level: {self.highest_level}", True, BLACK)
         level_rect = score_text.get_rect(topleft=(50, 30))
         screen.blit(level_text, level_rect)
         pygame.display.flip()
