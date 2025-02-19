@@ -8,6 +8,11 @@ async def main():
     """Main function to run the game."""
     while True:
         action = init_menu()
+        
+        # Set the window icon
+        icon = pygame.image.load('assets/logo.png')  # Replace with your icon file path
+        pygame.display.set_icon(icon)
+        
         await asyncio.sleep(0)
         if action == "start":
             game = LCSGame()

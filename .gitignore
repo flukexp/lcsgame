@@ -1,1 +1,19 @@
-__pycache__
+# Ignore build folder
+build/
+
+# Ignore dist folder
+dist/
+
+# Ignore main.spec file
+main.spec
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore other common files
+*.log
+*.tmp
+*.DS_Store
