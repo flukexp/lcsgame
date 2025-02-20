@@ -39,7 +39,8 @@ def save_highest_level(level):
     save_data(data)
 
 def save_data(data):
-    """Save the updated score data to the file."""
+    """Ensure the directory exists before saving the updated score data."""
+    os.makedirs(os.path.dirname(SCORE_FILE), exist_ok=True)  # ✅ Create directory if missing
     with open(SCORE_FILE, "w") as file:
         json.dump(data, file)
 
