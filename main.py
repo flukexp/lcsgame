@@ -1,8 +1,13 @@
 import asyncio
 import pygame
+import os
 from menu import init_menu
 from lcs import LCSGame
 from tutorial import Tutorial
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__)) 
+
+LOGO_PATH = os.path.join(BASE_DIR, "assets", "logo.png")
 
 async def main():
     """Main function to run the game."""
@@ -10,7 +15,7 @@ async def main():
         action = init_menu()
         
         # Set the window icon
-        icon = pygame.image.load('assets/logo.png')  # Replace with your icon file path
+        icon = pygame.image.load(LOGO_PATH)  # Replace with your icon file path
         pygame.display.set_icon(icon)
         
         await asyncio.sleep(0)

@@ -1,9 +1,13 @@
 import pygame
+import os
 import math
-from settings import WIDTH, HEIGHT, WHITE, BLACK, GREEN, DARK_GREEN, GRAY
+from settings import WIDTH, HEIGHT, WHITE, BLACK, GREEN, DARK_GREEN, GRAY, FONT_PATH
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-BG_IMAGE_PATH = "assets/sun.png"
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Get the absolute path of the script's directory
+
+BG_IMAGE_PATH = os.path.join(BASE_DIR, "assets", "sun.png") 
 
 class Tutorial:
     def __init__(self):
@@ -14,7 +18,7 @@ class Tutorial:
         
         # Improved fonts with better sizing
         self.title_font = pygame.font.Font(None, int(self.screen_height * 0.08))
-        self.font = pygame.font.Font("assets/fontvit.otf", int(self.screen_height * 0.05))
+        self.font = pygame.font.Font(FONT_PATH, int(self.screen_height * 0.05))
         self.small_font = pygame.font.Font(None, int(self.screen_height * 0.03))
         
         # Simple examples that kids can relate to
@@ -81,7 +85,7 @@ class Tutorial:
         # Animated title with pulsing effect
         pulse = abs(math.sin(self.animation_counter / 30)) * 10
         title_size = int(self.screen_height * 0.08 + pulse)
-        title_font = pygame.font.Font("assets/fontvit.otf", title_size)
+        title_font = pygame.font.Font(FONT_PATH, title_size)
         title_text = title_font.render("Tutorial LCS Game!", True, BLACK)
         title_rect = title_text.get_rect(center=(self.center_x, self.screen_height // 10))
         screen.blit(title_text, title_rect)

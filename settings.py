@@ -1,4 +1,5 @@
 import pygame
+import os
 
 # Screen dimensions
 WIDTH = 1024
@@ -18,7 +19,8 @@ GRAY = (128, 128, 128)
 # Initialize Pygame
 pygame.init()
 
-# Fonts
-# FONT = pygame.font.Font(None, 36)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Get the absolute path of the script's directory
 
-FONT = pygame.font.Font("assets/fontvit.otf", 28)  # lcs
+FONT_PATH = os.path.join(BASE_DIR, "assets", "fontvit.otf") 
+
+FONT = pygame.font.Font(FONT_PATH, 28)  # lcs

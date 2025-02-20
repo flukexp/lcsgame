@@ -1,16 +1,21 @@
 import pygame
 import json
 import os
-from settings import WIDTH, HEIGHT, FONT, WHITE, BLACK, GREEN
+from settings import WIDTH, HEIGHT, WHITE, BLACK, GREEN, FONT_PATH
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Get the absolute path of the script's directory
 
 # Load highest score from JSON
-SCORE_FILE = "assets/score.json"
+SCORE_FILE = os.path.join(BASE_DIR, "assets", "score.json") 
+
 # remove background
-BG_IMAGE_PATH = "assets/sun.png"
+BG_IMAGE_PATH = os.path.join(BASE_DIR, "assets", "sun.png") 
+
 
 def load_existing_data():
     """Load the existing score data, handling missing or corrupted files."""
     if os.path.exists(SCORE_FILE):
+        print(f"Load Score Path: {SCORE_FILE}")
         with open(SCORE_FILE, "r") as file:
             try:
                 return json.load(file)
@@ -41,6 +46,7 @@ def save_highest_level(level):
 def save_data(data):
     """Ensure the directory exists before saving the updated score data."""
     os.makedirs(os.path.dirname(SCORE_FILE), exist_ok=True)  # ✅ Create directory if missing
+    print(f"Save Score Path: {SCORE_FILE}")
     with open(SCORE_FILE, "w") as file:
         json.dump(data, file)
 
@@ -68,7 +74,7 @@ class Menu:
     def update_dimensions(self):
         """Update menu dimensions based on the current screen size."""
         self.screen_width, self.screen_height = screen.get_size()
-        self.font = pygame.font.Font("assets/fontvit.otf", int(self.screen_height * 0.05))
+        self.font = pygame.font.Font(FONT_PATH, int(self.screen_height * 0.05))
         self.center_x = self.screen_width // 2
         self.center_y = self.screen_height // 2.5
 

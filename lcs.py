@@ -3,17 +3,24 @@ import random
 import time
 import nltk
 import math
+import os
 from collections import defaultdict
-from settings import WIDTH, HEIGHT, FONT, WHITE, BLACK, GREEN, RED, BLUE, DARK_GREEN, GRAY, LIGHT_GRAY
+from settings import WIDTH, HEIGHT, FONT, WHITE, BLACK, GREEN, RED, DARK_GREEN, GRAY, FONT_PATH
 from menu import save_highest_score, load_highest_score, save_highest_level, load_highest_level
 
 nltk.download("words")
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
-# remove background
-BG_IMAGE_PATH = "assets/sun.png"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__)) 
 
+CORRECT_SFX_PATH = os.path.join(BASE_DIR, "assets", "correct.mp3")
+
+WIN_SFX_PATH = os.path.join(BASE_DIR, "assets", "win.wav")
+
+WRONG_SFX_PATH = os.path.join(BASE_DIR, "assets", "wrong.mp3")
+
+BG_IMAGE_PATH = os.path.join(BASE_DIR, "assets", "sun.png") 
 
 class LCSGame:
     def __init__(self):
@@ -109,7 +116,7 @@ class LCSGame:
 
         pulse = abs(math.sin(self.animation_counter / 30)) * 10
         title_size = int(self.screen_height * 0.08 + pulse)
-        title_font = pygame.font.Font("assets/fontvit.otf", title_size)
+        title_font = pygame.font.Font(FONT_PATH, title_size)
         title_text = title_font.render("LCS Game!", True, BLACK)
         title_rect = title_text.get_rect(center=(self.center_x, self.screen_height // 10))
         screen.blit(title_text, title_rect)
@@ -133,24 +140,6 @@ class LCSGame:
         self.screen.blit(FONT.render(f"Score: {self.score}", True, WHITE), (50, 300+add_y))
         self.screen.blit(FONT.render(f"Level: {self.level}", True, WHITE), (50, 350+add_y))
         self.screen.blit(FONT.render(f"Time: {int(time_remaining)}s", True, WHITE), (50, 400+add_y))
-        # instructions = [
-        #     "Instructions:",
-        #     "- Type letters to build a common subsequence",
-        #     "- Press ENTER to submit",
-        #     "- Press BACKSPACE to delete",
-        #     "- Press SPACE to see solution",
-        #     "- Press ESC to quit",
-        # ]
-
-        # control_rect = pygame.Rect(30, 480, 964, 260)
-        # self.draw_rounded_rect(screen, control_rect, GRAY)
-
-        # control_rect = pygame.Rect(40, 490, 180, 45)
-        # self.draw_rounded_rect(screen, control_rect, DARK_GREEN)
-
-        # for i, instruction in enumerate(instructions):
-        #     self.screen.blit(FONT.render(instruction, True, WHITE), (50, 500 + i * 40))
-
         
         self.draw_controls()
 
@@ -168,7 +157,7 @@ class LCSGame:
                     correct_lcs = self.find_lcs(*self.current_pair)
                     if len(self.user_sequence) == len(correct_lcs):
                         try:
-                            correct_sound = pygame.mixer.Sound("assets/correct.mp3")  
+                            correct_sound = pygame.mixer.Sound(CORRECT_SFX_PATH)  
                             correct_sound.play()
                         except Exception as e:
                             print("Error loading sound:", e)
@@ -242,8 +231,6 @@ class LCSGame:
         self.screen.blit(word1_surface, (370, 190))
         self.screen.blit(word2_surface, (370, 250))
 
-        # self.screen.blit(FONT.render(f"Solution: {lcs}", True, BLUE), (50, 250))
-
         y_offset = card_rect.top + 100
 
         result_rect = pygame.Rect(
@@ -257,24 +244,6 @@ class LCSGame:
         result_text = self.font.render(f"Solution: {lcs}", True, WHITE)
         result_rect = result_text.get_rect(center=(result_rect.centerx, result_rect.centery))
         screen.blit(result_text, result_rect)
-
-        # instructions = [
-        #     "Instructions:",
-        #     "- Type letters to build a common subsequence",
-        #     "- Press ENTER to submit",
-        #     "- Press BACKSPACE to delete",
-        #     "- Press SPACE to see solution",
-        #     "- Press ESC to quit",
-        # ]
-
-        # control_rect = pygame.Rect(30, 480, 964, 260)
-        # self.draw_rounded_rect(screen, control_rect, GRAY)
-
-        # control_rect = pygame.Rect(40, 490, 180, 45)
-        # self.draw_rounded_rect(screen, control_rect, DARK_GREEN)
-
-        # for i, instruction in enumerate(instructions):
-        #     self.screen.blit(FONT.render(instruction, True, WHITE), (50, 500 + i * 40))
 
         self.draw_controls()
         
@@ -295,7 +264,7 @@ class LCSGame:
         pygame.display.flip()
         
         try:
-            win_sound = pygame.mixer.Sound("assets/win.wav")  
+            win_sound = pygame.mixer.Sound(WIN_SFX_PATH)  
             win_sound.play()
         except Exception as e:
             print("Error loading sound:", e)
@@ -309,7 +278,7 @@ class LCSGame:
         shake_delay = 70  # Delay between shakes in milliseconds
         
         try:
-            error_sound = pygame.mixer.Sound("assets/wrong.mp3")  # Ensure the file exists
+            error_sound = pygame.mixer.Sound(WRONG_SFX_PATH)  # Ensure the file exists
             error_sound.play()
         except Exception as e:
             print("Error loading sound:", e)
