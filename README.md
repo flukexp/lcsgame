@@ -3,11 +3,11 @@
 LCS Game is an interactive and engaging game that challenges players to find the **Longest Common Subsequence (LCS)** between two words. Built using **Python** and **Pygame**, this game enhances logical thinking and pattern recognition skills.
 
 ## Features
-- **Random word pairs** to keep the game dynamic
-- **Real-time input validation** for an interactive experience
-- **Timer-based gameplay** to add a challenge
-- **Score and level progression** for rewarding gameplay
-- **Tutorial mode** to help new players understand LCS concepts
+- **Random word pairs** to keep the game dynamic.
+- **Real-time input validation** for an interactive experience.
+- **Timer-based gameplay** to add a challenge.
+- **Score and level progression** for rewarding gameplay.
+- **Tutorial mode** to help new players understand LCS concepts.
 
 ## Installation
 ### Prerequisites
@@ -20,7 +20,7 @@ pip install -r requirements.txt
 
 ## How to Play
 ### Objective
-The goal is to find the **Longest Common Subsequence (LCS)** between two given words. The LCS is the longest sequence of characters that appears in both words in the same order, but not necessarily consecutively.
+The goal is to find the **Longest Common Subsequence (LCS)** between two given words. The LCS is the longest sequence of characters that appears in both words in the same order but not necessarily consecutively.
 
 ### Starting the Game
 1. **Run the Game**
@@ -89,9 +89,18 @@ LCS-Game/
 │── README.md          # Project documentation
 ```
 
+## Troubleshooting
+If you encounter errors such as **"pygame.mixer can't find sound"** or **"mixer not initialized"** or **"pygame.error:dsp : No such audio device"**, you can fix it by installing the required SDL2 mixer package:
+```sh
+sudo apt-get install libsdl2-mixer-2.0-0
+```
+
+If Windows Defender blocks the .exe file from opening, try the following:
+1. Right-click the .exe file and select Run as Administrator.
+2. If a warning appears, click More info.
+3. Click Run anyway to proceed.
+
 ## License
 This project is licensed under the **MIT License**. See the `LICENSE` file for details.
 
 ---
-
-
